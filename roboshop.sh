@@ -1,4 +1,6 @@
 #!/bin/bash
+export PATH=/usr/local/bin:/usr/bin:$PATH
+
 
 AMI_ID="ami-0220d79f3f480ecf5"
 SG_ID="sg-095e187a502d135e1"
@@ -17,7 +19,7 @@ do
         --query 'Instances[0].InstanceId' \
         --output text )
 
-        if [ "$instance" = "frontend" ]; then
+        if [ $instance == "frontend" ]; then
            IP=$(
                 aws ec2 describe-instances \
                 --instance-ids $INSTANCE_ID \
