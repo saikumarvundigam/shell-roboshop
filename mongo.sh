@@ -5,9 +5,6 @@ G="\e[32m"
 B="\e[33m"
 Y="\e[34m"
 N="\e[0m"
-
-
-
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 USER_ID=$(id -u)
@@ -24,8 +21,8 @@ VALIDATE()
 if [ $1 -ne 0 ]; then
 echo "$2 failed." | tee -a  $LOG_FILE
 else
-echo "$2 success"
+echo "$2 success" | tee -a  $LOG_FILE
 }
 
 cp mongo.repo /etc/yum.repos.d/mongo.repo
-VALIDATE $? "MONGO Repo copy is "
+VALIDATE $? "MONGO Repo copy is"
