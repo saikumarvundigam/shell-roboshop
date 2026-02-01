@@ -22,6 +22,7 @@ if [ $1 -ne 0 ]; then
 echo "$2 failed." | tee -a  $LOG_FILE
 else
 echo "$2 success" | tee -a  $LOG_FILE
+fi
 }
 
 cp mongo.repo /etc/yum.repos.d/mongo.repo
