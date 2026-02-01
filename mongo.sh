@@ -28,7 +28,7 @@ fi
 cp mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "MONGO Repo copy is"
 
-dnf install mongo-org -y &>> $LOG_FILE
+dnf install mongodb-org -y &>> $LOG_FILE
 VALIDATE $? "MONGO DB Installation is"
 
 systemctl enable mongod &>> $LOG_FILE
@@ -37,3 +37,8 @@ VALIDATE $? "Enabling MONGO is"
 systemctl start mongod &>> $LOG_FILE
 VALIDATE $? "Starting MONGODB Service is"
 
+sed -i 's/127.0.0.1/0.0.0.0'/g /etc/yum.repos.d/mongo.repo
+VALIDATE $? "Allowing Remote connections"
+
+systemctl restart mongod &>> $LOG_FILE
+VALIDATE $? "Re-starting MONGODB Service is"
