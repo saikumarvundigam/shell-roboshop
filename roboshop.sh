@@ -1,7 +1,7 @@
 #!/bin/bash
 
 AMI_ID="ami-0220d79f3f480ecf5"
-SG_ID="sg-0abcdef1234567890"
+SG_ID="sg-095e187a502d135e1"
 ZONEID="Z0095171DCHOSBNY5RZZ"
 DOMAIN="cloudmine.co.in"
 
