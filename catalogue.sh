@@ -39,7 +39,7 @@ VALIDATE $? "NODE JS installation is"
 
 id roboshop
 if [ $? -ne 0 ]; then
-useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOGS_FILE
+useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
 VALIDATE $? "Roboshop user creation is"
 else
 echo "Roboshp user already exists. Skipping...!!!"
@@ -54,30 +54,30 @@ VALIDATE $? "Moving to app directory"
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
 
-curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip  &>>$LOGS_FILE
+curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip  &>>$LOG_FILE
 VALIDATE $? "Downloading catalogue code"
 
 cp /tmp/catalogue.zip /app
 VALIDATE $? "Copying Catalogue file to app is"
 
-unzip catalogue.zip &>>$LOGS_FILE
+unzip catalogue.zip &>>$LOG_FILE
 VALIDATE $? "Uzip catalogue code"
 
-npm install  &>>$LOGS_FILE
+npm install  &>>$LOG_FILE
 VALIDATE $? "Installing dependencies"
 
 cp /roboshop/shell-roboshop/catalogue.service /etc/systemd/system/catalogue.service
 VALIDATE $? "Creation of Service is"
 
 systemctl daemon-reload
-systemctl enable catalogue  &>>$LOGS_FILE
+systemctl enable catalogue  &>>$LOG_FILE
 systemctl start catalogue
 VALIDATE $? "Starting and enabling catalogue"
 
 cp /roboshop/shell-roboshop/mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "Repo update is"
 
-dnf install mongodb-mongosh -y &>>$LOGS_FILE
+dnf install mongodb-mongosh -y &>>$LOG_FILE
 
 INDEX=$(mongosh --host $MONGODB_HOST --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
 
