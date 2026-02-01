@@ -9,6 +9,7 @@ for instance in $@
 do
     INSTANCE_ID=$(
         aws ec2 run-instances \
+        --subnet-id subnet-092ecd6324448c696 \
         --image-id $AMI_ID \
         --instance-type t3.micro \
         --security-group-ids $SG_ID \
