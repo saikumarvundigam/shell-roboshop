@@ -43,12 +43,12 @@ VALIDATE $? "Staring NginX Service is"
 rm -rf /usr/share/nginx/html/* 
 VALIDATE $? "Removing of old NginX HTML files is"
 
-curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
+curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>> $LOG_FILE
 cd /usr/share/nginx/html
-unzip /tmp/frontend.zip
-VALIDATE $? "Frontend files unzipping is"
+unzip /tmp/frontend.zip &>> $LOG_FILE
+VALIDATE $? "Frontend files are downloaded and unzipping is"
 
-cp /roboshop/shell-roboshop/nginx.conf /etc/nginx/nginx.conf
+cp /app/roboshop/shell-roboshop/nginx.conf /etc/nginx/nginx.conf
 VALIDATE $? "Nginx config update is"
 
 systemctl restart nginx
