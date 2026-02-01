@@ -27,3 +27,13 @@ fi
 
 cp mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "MONGO Repo copy is"
+
+dnf install mongo-org -y &>> $LOG_FILE
+VALIDATE $? "MONGO DB Installation is"
+
+systemctl enable mongod &>> $LOG_FILE
+VALIDATE $? "Enabling MONGO is"
+
+systemctl start mongod &>> $LOG_FILE
+VALIDATE $? "Starting MONGODB Service is"
+
