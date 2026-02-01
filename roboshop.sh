@@ -16,7 +16,7 @@ do
         --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
         --query 'Instances[0].InstanceId' \
         --output text )
-        
+
         if [ $instance == "frontend" ]; then
            IP=$(
                 aws ec2 describe-instances \
@@ -34,8 +34,8 @@ do
                 )
                 RECORD_NAME="$instance.$DOMAIN"         
         fi
-        echo $IP
 
+        echo $IP
     aws route53 change-resource-record-sets \
     --hosted-zone-id $ZONEID \
     --change-batch '
