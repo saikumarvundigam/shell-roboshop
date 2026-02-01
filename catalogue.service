@@ -5,7 +5,7 @@ Description = Catalogue Service
 User=roboshop
 Environment=MONGO=true
 // highlight-start
-Environment=MONGO_URL="mongodb://mongodb.cloudmine.co.in:27017/catalogue"
+Environment=MONGO_URL="mongodb://mongo.cloudmine.co.in:27017/catalogue"
 // highlight-end
 ExecStart=/bin/node /app/server.js
 SyslogIdentifier=catalogue
