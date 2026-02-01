@@ -48,7 +48,7 @@ cd /usr/share/nginx/html
 unzip /tmp/frontend.zip &>> $LOG_FILE
 VALIDATE $? "Frontend files are downloaded and unzipping is"
 
-cp /app/roboshop/shell-roboshop/nginx.conf /etc/nginx/nginx.conf
+cp /app/roboshop/nginx.conf /etc/nginx/nginx.conf
 VALIDATE $? "Nginx config update is"
 
 systemctl restart nginx
