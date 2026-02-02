@@ -1,4 +1,3 @@
-#!/bin/bash
 
 R="\e[31m"
 G="\e[32m"
@@ -7,7 +6,7 @@ Y="\e[34m"
 N="\e[0m"
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
-MONGODB_HOST=mongo.cloudmine.co.in
+MYSQL_HOST=mysql.cloudmine.co.in
 SCRIPT_DIR=$PWD
 
 
@@ -29,14 +28,9 @@ fi
 }
 
 
-dnf module disable nodejs -y &>> $LOG_FILE
-VALIDATE $? "Disablinig NodeJS default version"
 
-dnf module enable nodejs:20 -y &>> $LOG_FILE
-VALIDATE $? "Enabling od Node JS 20 version is"
-
-dnf install nodejs -y &>> $LOG_FILE
-VALIDATE $? "NODE JS installation is"
+dnf install python3 gcc python3-devel -y &>> $LOG_FILE
+VALIDATE $? "Python installation is"
 
 
 id roboshop &>>$LOG_FILE
@@ -47,6 +41,8 @@ else
 echo "Roboshp user already exists. Skipping...!!!"
 fi
 
+
+
 mkdir -p /app
 VALIDATE $? "Directory creation is"
 
@@ -56,22 +52,22 @@ VALIDATE $? "Moving to app directory"
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
 
-curl -L -o /tmp/user.zip https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip &>>$LOG_FILE
-VALIDATE $? "Downloading user code"
+curl -L -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip &>>$LOG_FILE
+VALIDATE $? "Downloading payment code"
 
-cp /tmp/user.zip /app
-VALIDATE $? "Copying user file to app is"
+cp /tmp/payment.zip /app
+VALIDATE $? "Copying payment file to app is"
 
-unzip user.zip &>>$LOG_FILE
-VALIDATE $? "Uzip user code"
+unzip payment.zip &>>$LOG_FILE
+VALIDATE $? "Uzip payment code"
 
-npm install  &>>$LOG_FILE
+pip3 install -r requirements.txt
 VALIDATE $? "Installing dependencies"
 
-cp $SCRIPT_DIR/user.service /etc/systemd/system/user.service
-VALIDATE $? "Creation of user Service is"
+cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service
+VALIDATE $? "Creation of payment Service is"
 
 systemctl daemon-reload
-systemctl enable user  &>>$LOG_FILE
-systemctl start user
-VALIDATE $? "Starting and enabling user"
+systemctl enable payment  &>>$LOG_FILE
+systemctl start payment
+VALIDATE $? "Starting and enabling payment"
