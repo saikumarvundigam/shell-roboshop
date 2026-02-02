@@ -70,6 +70,9 @@ systemctl enable shipping  &>>$LOG_FILE
 systemctl start shipping
 VALIDATE $? "Starting and enabling shipping"
 
+dnf install mysql -y &>>$LOG_FILE
+VALIDATE $? "Installatio of mysql-client"
+
 mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/schema.sql
 mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/app-user.sql 
 mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/master-data.sql
