@@ -73,9 +73,9 @@ VALIDATE $? "Starting and enabling shipping"
 dnf install mysql -y &>>$LOG_FILE
 VALIDATE $? "Installatio of mysql-client"
 
-mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/schema.sql
-mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/app-user.sql 
-mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/master-data.sql
+mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
+mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/app-user.sql &>>$LOG_FILE
+mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
 
 systemctl restart shipping
 VALIDATE $? "Restarting and enabling shipping"
