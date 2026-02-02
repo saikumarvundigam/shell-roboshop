@@ -8,6 +8,7 @@ N="\e[0m"
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 MONGODB_HOST=mongo.cloudmine.co.in
+SCRIPT_DIR=$PWD
 
 
 USER_ID=$(id -u)
@@ -66,7 +67,7 @@ VALIDATE $? "Uzip catalogue code"
 npm install  &>>$LOG_FILE
 VALIDATE $? "Installing dependencies"
 
-cp /roboshop/shell-roboshop/catalogue.service /etc/systemd/system/catalogue.service
+cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
 VALIDATE $? "Creation of Service is"
 
 systemctl daemon-reload
@@ -74,7 +75,7 @@ systemctl enable catalogue  &>>$LOG_FILE
 systemctl start catalogue
 VALIDATE $? "Starting and enabling catalogue"
 
-cp /roboshop/shell-roboshop/mongo.repo /etc/yum.repos.d/mongo.repo
+cp $SCRIPT_DIR  /mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "Repo update is"
 
 dnf install mongodb-mongosh -y &>>$LOG_FILE
