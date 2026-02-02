@@ -45,9 +45,9 @@ rm -rf /usr/share/nginx/html/*
 VALIDATE $? "Removing of old NginX HTML files is"
 
 curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>> $LOG_FILE
-cd /usr/share/nginx/html
-unzip /tmp/frontend.zip &>> $LOG_FILE
+unzip /tmp/frontend.zip /usr/share/nginx/html &>> $LOG_FILE
 VALIDATE $? "Frontend files are downloaded and unzipping is"
+
 
 cp $SCRIPT_DIR/nginx.conf /etc/nginx/nginx.conf
 VALIDATE $? "Nginx config update is"
