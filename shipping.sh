@@ -73,9 +73,20 @@ VALIDATE $? "Starting and enabling shipping"
 dnf install mysql -y &>>$LOG_FILE
 VALIDATE $? "Installatio of mysql-client"
 
+
+mysql -h mysql.cloudmine.co.in -uroot -pRoboShop@1 -e 'use cities' &>>$LOG_FILE
+
+if [ $1 -ne 0 ]; then
+
 mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
 mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/app-user.sql &>>$LOG_FILE
 mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
 
+VALIDATE $? "Schema load is"
+else
+echo "Schema is already loaded"
+fi
+
+systemctl enable shipping  &>>$LOG_FILE
 systemctl restart shipping
 VALIDATE $? "Restarting and enabling shipping"
