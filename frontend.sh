@@ -8,6 +8,7 @@ N="\e[0m"
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 CATALOGUE_HOST=catalogue.cloudmine.co.in
+SCRIPT_DIR=$PWD
 
 
 USER_ID=$(id -u)
@@ -48,7 +49,7 @@ cd /usr/share/nginx/html
 unzip /tmp/frontend.zip &>> $LOG_FILE
 VALIDATE $? "Frontend files are downloaded and unzipping is"
 
-cp /app/shell-roboshop/nginx.conf /etc/nginx/nginx.conf
+cp $SCRIPT_DIR/nginx.conf /etc/nginx/nginx.conf
 VALIDATE $? "Nginx config update is"
 
 systemctl restart nginx
