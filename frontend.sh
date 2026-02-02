@@ -37,7 +37,7 @@ VALIDATE $? "Enabling Nginx version is"
 dnf install nginx -y &>> $LOG_FILE
 VALIDATE $? "NginX installation is"
 
-systemctl enable nginx 
+systemctl enable nginx &>> $LOG_FILE
 systemctl start nginx
 VALIDATE $? "Staring NginX Service is"
 
