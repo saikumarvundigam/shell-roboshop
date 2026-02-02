@@ -38,5 +38,5 @@ VALIDATE $? "Allowing Remote connections and disabling protected-mode is"
 systemctl enable redis &>> $LOG_FILE
 VALIDATE $? "Enabling REDIS is"
 
-systemctl start redis &>> $LOG_FILE
-VALIDATE $? "Starting Redis Service is"
+systemctl restart redis &>> $LOG_FILE
+VALIDATE $? "Re-Starting Redis Service is"
