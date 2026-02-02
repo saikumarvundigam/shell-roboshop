@@ -55,16 +55,16 @@ VALIDATE $? "Removing existing code"
 curl -L -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip &>>$LOG_FILE
 VALIDATE $? "Downloading payment code"
 
-cp /tmp/payment.zip /app
+cp /tmp/payment.zip /app &>>$LOG_FILE
 VALIDATE $? "Copying payment file to app is"
 
 unzip payment.zip &>>$LOG_FILE
 VALIDATE $? "Uzip payment code"
 
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt &>>$LOG_FILE
 VALIDATE $? "Installing dependencies"
 
-cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service
+cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service &>>$LOG_FILE
 VALIDATE $? "Creation of payment Service is"
 
 systemctl daemon-reload
