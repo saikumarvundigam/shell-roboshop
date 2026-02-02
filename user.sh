@@ -56,39 +56,22 @@ VALIDATE $? "Moving to app directory"
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
 
-curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip  &>>$LOG_FILE
+curl -L -o /tmp/user.zip https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip &>>$LOG_FILE
 VALIDATE $? "Downloading catalogue code"
 
-cp /tmp/catalogue.zip /app
-VALIDATE $? "Copying Catalogue file to app is"
+cp /tmp/user.zip /app
+VALIDATE $? "Copying user file to app is"
 
-unzip catalogue.zip &>>$LOG_FILE
-VALIDATE $? "Uzip catalogue code"
+unzip user.zip &>>$LOG_FILE
+VALIDATE $? "Uzip user code"
 
 npm install  &>>$LOG_FILE
 VALIDATE $? "Installing dependencies"
 
-cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
-VALIDATE $? "Creation of Service is"
+cp $SCRIPT_DIR/user.service /etc/systemd/system/user.service
+VALIDATE $? "Creation of user Service is"
 
 systemctl daemon-reload
-systemctl enable catalogue  &>>$LOG_FILE
-systemctl start catalogue
-VALIDATE $? "Starting and enabling catalogue"
-
-cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo
-VALIDATE $? "Repo update is"
-
-dnf install mongodb-mongosh -y &>>$LOG_FILE
-
-INDEX=$(mongosh --host $MONGODB_HOST --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
-
-if [ $INDEX -le 0 ]; then
-    mongosh --host $MONGODB_HOST </app/db/master-data.js &>>$LOG_FILE
-    VALIDATE $? "Loading products"
-else
-    echo -e "Products already loaded ... $Y SKIPPING $N"
-fi
-
-systemctl restart catalogue
-VALIDATE $? "Restarting catalogue"
+systemctl enable user  &>>$LOG_FILE
+systemctl start user
+VALIDATE $? "Starting and enabling user"
