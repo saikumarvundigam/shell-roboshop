@@ -1,0 +1,36 @@
+#!/bin/bash
+
+R="\e[31m"
+G="\e[32m"
+B="\e[33m"
+Y="\e[34m"
+N="\e[0m"
+LOG_FOLDER="/var/log/roboshop"
+LOG_FILE="$LOG_FOLDER"/$0.log
+USER_ID=$(id -u)
+
+if [ $USER_ID -ne 0 ]; then
+echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
+exit 1
+fi
+
+mkdir -p $LOG_FOLDER
+
+VALIDATE()
+{
+if [ $1 -ne 0 ]; then
+echo "$2 failed." | tee -a  $LOG_FILE
+else
+echo "$2 success" | tee -a  $LOG_FILE
+fi
+}
+
+dnf install mysql-server -y &>> $LOG_FILE
+VALIDATE $? "MySQL Installation is"
+
+systemctl enable mysqld  &>> $LOG_FILE
+systemctl start mysqld   &>> $LOG_FILE
+VALIDATE $? "MySQL SQL Enable is"
+
+mysql_secure_installation --set-root-pass RoboShop@1 &>> $LOG_FILE
+VALIDATE $? "Setting-up Root Password of MYSQL Server is"
