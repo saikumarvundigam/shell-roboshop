@@ -28,7 +28,7 @@ echo "$2 success" | tee -a  $LOG_FILE
 fi
 }
 
-cp $SCRIPT_DIR/rabbitmq.repo /etc/yum.repos.d/
+cp $SCRIPT_DIR/rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo   
 VALIDATE  $? "Adding RabbitMQ Repo is"
 
 dnf install rabbitmq-server -y &>> $LOG_FILE
