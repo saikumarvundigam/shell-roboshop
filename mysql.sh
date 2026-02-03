@@ -1,36 +1,36 @@
 #!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
-USER_ID=$(id -u)
 
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
-dnf install mysql-server -y &>> $LOG_FILE
-VALIDATE $? "MySQL Installation is"
+dnf install mysql-server -y &>>$LOGS_FILE
+VALIDATE $? "Install MySQL server"
 
-systemctl enable mysqld  &>> $LOG_FILE
-systemctl start mysqld   &>> $LOG_FILE
-VALIDATE $? "MySQL SQL Enable is"
+systemctl enable mysqld &>>$LOGS_FILE
+systemctl start mysqld  
+VALIDATE $? "Enable and start mysql"
 
-mysql_secure_installation --set-root-pass RoboShop@1 &>> $LOG_FILE
-VALIDATE $? "Setting-up Root Password of MYSQL Server is"
+# get the password from user
+mysql_secure_installation --set-root-pass RoboShop@1
+VALIDATE $? "Setup root password"

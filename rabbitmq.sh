@@ -1,43 +1,41 @@
 #!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
-MYSQL_HOST=mysql.cloudmine.co.in
 SCRIPT_DIR=$PWD
+MYSQL_HOST=mysql.cloudmine.co.in
 
-
-USER_ID=$(id -u)
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
-cp $SCRIPT_DIR/rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo   
-VALIDATE  $? "Adding RabbitMQ Repo is"
+cp $SCRIPT_DIR/rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo
+VALIDATE $? "Added RabbitMQ repo"
 
-dnf install rabbitmq-server -y &>> $LOG_FILE
-VALIDATE $? "RabbitMQ installation  is"
+dnf install rabbitmq-server -y &>>$LOGS_FILE
+VALIDATE $? "Installing RabbitMQ server"
 
-systemctl enable rabbitmq-server &>> $LOG_FILE
-systemctl start rabbitmq-server &>> $LOG_FILE
-VALIDATE $? "Enabling and Staring of RabbitMQ service is"
+systemctl enable rabbitmq-server &>>$LOGS_FILE
+systemctl start rabbitmq-server
+VALIDATE $? "Enabled and started rabbitmq"
 
-rabbitmqctl add_user roboshop roboshop123 &>> $LOG_FILE
-rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*" &>> $LOG_FILE
-VALIDATE $? "Adding User and Set Permisssions are"
+rabbitmqctl add_user roboshop roboshop123 &>>$LOGS_FILE
+rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*" &>>$LOGS_FILE
+VALIDATE $? "created user and gien permissions"
