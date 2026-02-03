@@ -1,50 +1,47 @@
+#!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
-MYSQL_HOST=mysql.cloudmine.co.in
 SCRIPT_DIR=$PWD
+MYSQL_HOST=mysql.cloudmine.co.in
 
-
-USER_ID=$(id -u)
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
+dnf install python3 gcc python3-devel -y &>>$LOGS_FILE
+VALIDATE $? "Installing Python"
 
-
-dnf install python3 gcc python3-devel -y &>> $LOG_FILE
-VALIDATE $? "Python installation is"
-
-
-id roboshop &>>$LOG_FILE
+id roboshop &>>$LOGS_FILE
 if [ $? -ne 0 ]; then
-useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
-VALIDATE $? "Roboshop user creation is"
+    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOGS_FILE
+    VALIDATE $? "Creating system user"
 else
-echo "Roboshp user already exists. Skipping...!!!"
+    echo -e "Roboshop user already exist ... $Y SKIPPING $N"
 fi
 
+mkdir -p /app 
+VALIDATE $? "Creating app directory"
 
-
-mkdir -p /app
-VALIDATE $? "Directory creation is"
+curl -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip  &>>$LOGS_FILE
+VALIDATE $? "Downloading payment code"
 
 cd /app
 VALIDATE $? "Moving to app directory"
@@ -52,22 +49,17 @@ VALIDATE $? "Moving to app directory"
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
 
-curl -L -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip &>>$LOG_FILE
-VALIDATE $? "Downloading payment code"
-
-cp /tmp/payment.zip /app &>>$LOG_FILE
-VALIDATE $? "Copying payment file to app is"
-
-unzip payment.zip &>>$LOG_FILE
+unzip /tmp/payment.zip &>>$LOGS_FILE
 VALIDATE $? "Uzip payment code"
 
-pip3 install -r requirements.txt &>>$LOG_FILE
+cd /app 
+pip3 install -r requirements.txt &>>$LOGS_FILE
 VALIDATE $? "Installing dependencies"
 
-cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service &>>$LOG_FILE
-VALIDATE $? "Creation of payment Service is"
+cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service
+VALIDATE $? "Created systemctl service"
 
 systemctl daemon-reload
-systemctl enable payment  &>>$LOG_FILE
+systemctl enable payment &>>$LOGS_FILE
 systemctl start payment
-VALIDATE $? "Starting and enabling payment"
+VALIDATE $? "Enabled and started payment"
