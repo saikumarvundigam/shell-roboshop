@@ -46,7 +46,7 @@ VALIDATE $? "Removing of old NginX HTML files is"
 
 curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>> $LOG_FILE
 cd /usr/share/nginx/html
-unzip /tmp/frontend.zip &>>$LOGS_FILE
+unzip /tmp/frontend.zip &>>$LOG_FILE
 VALIDATE $? "Frontend files are downloaded and unzipping is"
 
 rm -rf /etc/nginx/nginx.conf
