@@ -1,74 +1,70 @@
 #!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
+SCRIPT_DIR=$PWD
 MONGODB_HOST=mongo.cloudmine.co.in
-SCRIPT_DIR=/home/ec2-user/shell-roboshop
 
-
-USER_ID=$(id -u)
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
+dnf module disable nodejs -y &>>$LOGS_FILE
+VALIDATE $? "Disabling NodeJS Default version"
 
-dnf module disable nodejs -y &>>$LOG_FILE
-VALIDATE $? "Disablinig NodeJS default version"
+dnf module enable nodejs:20 -y &>>$LOGS_FILE
+VALIDATE $? "Enabling NodeJS 20"
 
-dnf module enable nodejs:20 -y &>>$LOG_FILE
-VALIDATE $? "Enabling of Node JS 20 version is"
+dnf install nodejs -y &>>$LOGS_FILE
+VALIDATE $? "Install NodeJS"
 
-dnf install nodejs -y &>>$LOG_FILE
-VALIDATE $? "NODE JS installation is"
-
-
-id roboshop &>>$LOG_FILE
+id roboshop &>>$LOGS_FILE
 if [ $? -ne 0 ]; then
-useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
-VALIDATE $? "Roboshop user creation is"
+    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOGS_FILE
+    VALIDATE $? "Creating system user"
 else
-echo "Roboshp user already exists. Skipping...!!!"
+    echo -e "Roboshop user already exist ... $Y SKIPPING $N"
 fi
 
-mkdir -p /app
-VALIDATE $? "Directory creation is"
+mkdir -p /app 
+VALIDATE $? "Creating app directory"
 
-# cd /app
-# VALIDATE $? "Moving to app directory"
+curl -o /tmp/cart.zip https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip  &>>$LOGS_FILE
+VALIDATE $? "Downloading cart code"
+
+cd /app
+VALIDATE $? "Moving to app directory"
 
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
 
-curl -L -o /tmp/cart.zip https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip &>>$LOG_FILE
-VALIDATE $? "Downloading cart code"
-
-unzip /tmp/cart.zip -d /app &>>LOG_FILE
+unzip /tmp/cart.zip &>>$LOGS_FILE
 VALIDATE $? "Uzip cart code"
 
-npm install  &>>$LOG_FILE
+npm install  &>>$LOGS_FILE
 VALIDATE $? "Installing dependencies"
 
 cp $SCRIPT_DIR/cart.service /etc/systemd/system/cart.service
-VALIDATE $? "Creation of Service is"
+VALIDATE $? "Created systemctl service"
 
 systemctl daemon-reload
-systemctl enable cart  &>>$LOG_FILE
+systemctl enable cart  &>>$LOGS_FILE
 systemctl start cart
 VALIDATE $? "Starting and enabling cart"

@@ -1,42 +1,39 @@
 #!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
-USER_ID=$(id -u)
 
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
-dnf module disable redis -y &>> $LOG_FILE
-dnf module enable redis:7 -y &>> $LOG_FILE
-VALIDATE $? "Enabling Redi 7 is"
+dnf module disable redis -y &>>$LOGS_FILE
+dnf module enable redis:7 -y &>>$LOGS_FILE
+VALIDATE $? "Enable Redis:7"
 
-dnf install redis -y  &>> $LOG_FILE
-VALIDATE $? "Redis Installation is"
+dnf install redis -y  &>>$LOGS_FILE
+VALIDATE $? "Installed Redis"
 
 sed -i -e 's/127.0.0.1/0.0.0.0/g' -e '/protected-mode/ c protected-mode no' /etc/redis/redis.conf
-VALIDATE $? "Allowing Remote connections and disabling protected-mode is"
+VALIDATE $? "Allowing remote connections"
 
-systemctl enable redis &>> $LOG_FILE
-VALIDATE $? "Enabling REDIS is"
-
-systemctl restart redis &>> $LOG_FILE
-VALIDATE $? "Re-Starting Redis Service is"
+systemctl enable redis &>>$LOGS_FILE
+systemctl start redis 
+VALIDATE $? "Enabled and started Redis"

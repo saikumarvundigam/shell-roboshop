@@ -1,58 +1,52 @@
 #!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
+SCRIPT_DIR=$PWD
 CATALOGUE_HOST=catalogue.cloudmine.co.in
-SCRIPT_DIR=/home/ec2-user/shell-roboshop
 
-
-USER_ID=$(id -u)
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
-dnf module disable nginx -y &>> $LOG_FILE
-VALIDATE $? "Disablinig NginX default version"
+dnf module disable nginx -y &>>$LOGS_FILE
+dnf module enable nginx:1.24 -y &>>$LOGS_FILE
+dnf install nginx -y &>>$LOGS_FILE
+VALIDATE $? "Installing Nginx"
 
-dnf module enable nginx:1.24 -y &>> $LOG_FILE
-VALIDATE $? "Enabling Nginx version is"
-
-dnf install nginx -y &>> $LOG_FILE
-VALIDATE $? "NginX installation is"
-
-systemctl enable nginx &>> $LOG_FILE
-systemctl start nginx
-VALIDATE $? "Staring NginX Service is"
+systemctl enable nginx  &>>$LOGS_FILE
+systemctl start nginx 
+VALIDATE $? "Enabled and started nginx"
 
 rm -rf /usr/share/nginx/html/* 
-VALIDATE $? "Removing of old NginX HTML files is"
+VALIDATE $? "Remove default content"
 
-curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>> $LOG_FILE
-cd /usr/share/nginx/html
-unzip /tmp/frontend.zip &>>$LOG_FILE
-VALIDATE $? "Frontend files are downloaded and unzipping is"
+curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>>$LOGS_FILE
+cd /usr/share/nginx/html 
+unzip /tmp/frontend.zip &>>$LOGS_FILE
+VALIDATE $? "Downloaded and unzipped frontend"
 
 rm -rf /etc/nginx/nginx.conf
 
 cp $SCRIPT_DIR/nginx.conf /etc/nginx/nginx.conf
-VALIDATE $? "Nginx config update is"
+VALIDATE $? "Copied our nginx conf file"
 
 systemctl restart nginx
-VALIDATE $? "ReStaring NginX Service is"
+VALIDATE $? "Restarted Nginx"
