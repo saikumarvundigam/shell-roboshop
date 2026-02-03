@@ -29,13 +29,13 @@ fi
 }
 
 
-dnf module disable nodejs -y &>> $LOG_FILE
+dnf module disable nodejs -y &>>$LOG_FILE
 VALIDATE $? "Disablinig NodeJS default version"
 
-dnf module enable nodejs:20 -y &>> $LOG_FILE
+dnf module enable nodejs:20 -y &>>$LOG_FILE
 VALIDATE $? "Enabling of Node JS 20 version is"
 
-dnf install nodejs -y &>> $LOG_FILE
+dnf install nodejs -y &>>$LOG_FILE
 VALIDATE $? "NODE JS installation is"
 
 
@@ -50,8 +50,8 @@ fi
 mkdir -p /app
 VALIDATE $? "Directory creation is"
 
-cd /app
-VALIDATE $? "Moving to app directory"
+# cd /app
+# VALIDATE $? "Moving to app directory"
 
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
@@ -59,14 +59,12 @@ VALIDATE $? "Removing existing code"
 curl -L -o /tmp/cart.zip https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip &>>$LOG_FILE
 VALIDATE $? "Downloading cart code"
 
-cp /tmp/cart.zip /app
-VALIDATE $? "Copying cart file to app is"
-
-unzip cart.zip &>>$LOG_FILE
+unzip /tmp/cart.zip -d /app &>>LOG_FILE
 VALIDATE $? "Uzip cart code"
 
-npm install  &>>$LOG_FILE
+npm install /app &>>$LOG_FILE
 VALIDATE $? "Installing dependencies"
+
 
 cp $SCRIPT_DIR/cart.service /etc/systemd/system/cart.service
 VALIDATE $? "Creation of cart Service is"
