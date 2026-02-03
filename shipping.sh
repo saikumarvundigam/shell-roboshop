@@ -1,47 +1,47 @@
 #!/bin/bash
 
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-roboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
-B="\e[33m"
-Y="\e[34m"
+Y="\e[33m"
 N="\e[0m"
-LOG_FOLDER="/var/log/roboshop"
-LOG_FILE="$LOG_FOLDER"/$0.log
-MYSQL_HOST=mysql.cloudmine.co.in
 SCRIPT_DIR=$PWD
+MYSQL_HOST=mysql.cloudmine.co.in
 
-
-USER_ID=$(id -u)
-if [ $USER_ID -ne 0 ]; then
-echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
-exit 1
+if [ $USERID -ne 0 ]; then
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
+    exit 1
 fi
 
-mkdir -p $LOG_FOLDER
+mkdir -p $LOGS_FOLDER
 
-VALIDATE()
-{
-if [ $1 -ne 0 ]; then
-echo "$2 failed." | tee -a  $LOG_FILE
-else
-echo "$2 success" | tee -a  $LOG_FILE
-fi
+VALIDATE(){
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
-dnf install maven -y &>> $LOG_FILE
-VALIDATE $? "Maven installation is"
+dnf install maven -y &>>$LOGS_FILE
+VALIDATE $? "Installing Maven"
 
-
-id roboshop &>>$LOG_FILE
+id roboshop &>>$LOGS_FILE
 if [ $? -ne 0 ]; then
-useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
-VALIDATE $? "Roboshop user creation is"
+    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOGS_FILE
+    VALIDATE $? "Creating system user"
 else
-echo "Roboshp user already exists. Skipping...!!!"
+    echo -e "Roboshop user already exist ... $Y SKIPPING $N"
 fi
 
-mkdir -p /app
-VALIDATE $? "Directory creation is"
+mkdir -p /app 
+VALIDATE $? "Creating app directory"
+
+curl -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip  &>>$LOGS_FILE
+VALIDATE $? "Downloading shipping code"
 
 cd /app
 VALIDATE $? "Moving to app directory"
@@ -49,44 +49,33 @@ VALIDATE $? "Moving to app directory"
 rm -rf /app/*
 VALIDATE $? "Removing existing code"
 
-curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip &>>$LOG_FILE
-VALIDATE $? "Downloading shipping code"
-
-cp /tmp/shipping.zip /app
-VALIDATE $? "Copying shipping file to app is"
-
-unzip shipping.zip &>>$LOG_FILE
+unzip /tmp/shipping.zip &>>$LOGS_FILE
 VALIDATE $? "Uzip shipping code"
 
-mvn clean package &>>$LOG_FILE
-mv target/shipping-1.0.jar shipping.jar &>>$LOG_FILE
-VALIDATE $? "Installing dependencies"
+cd /app 
+mvn clean package &>>$LOGS_FILE
+VALIDATE $? "Installing and Building shipping"
+
+mv target/shipping-1.0.jar shipping.jar 
+VALIDATE $? "Moving and Renaming shipping"
 
 cp $SCRIPT_DIR/shipping.service /etc/systemd/system/shipping.service
-VALIDATE $? "Creation of shipping Service is"
+VALIDATE $? "Created systemctl service"
 
-systemctl daemon-reload
-systemctl enable shipping  &>>$LOG_FILE
-systemctl start shipping
-VALIDATE $? "Starting and enabling shipping"
+dnf install mysql -y  &>>$LOGS_FILE
+VALIDATE $? "Installing MySQL"
 
-dnf install mysql -y &>>$LOG_FILE
-VALIDATE $? "Installatio of mysql-client"
-
-
-mysql -h mysql.cloudmine.co.in -uroot -pRoboShop@1 -e 'use cities' &>>$LOG_FILE
-
+mysql -h $MYSQL_HOST -uroot -pRoboShop@1 -e 'use cities'
 if [ $? -ne 0 ]; then
 
-mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
-mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/app-user.sql &>>$LOG_FILE
-mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
-
-VALIDATE $? "Schema load is"
+    mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOGS_FILE
+    mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/app-user.sql &>>$LOGS_FILE
+    mysql -h $MYSQL_HOST -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOGS_FILE
+    VALIDATE $? "Loaded data into MySQL"
 else
-echo "Schema is already loaded"
+    echo -e "data is already loaded ... $Y SKIPPING $N"
 fi
 
-systemctl enable shipping  &>>$LOG_FILE
-systemctl restart shipping
-VALIDATE $? "Restarting and enabling shipping"
+systemctl enable shipping &>>$LOGS_FILE
+systemctl start shipping
+VALIDATE $? "Enabled and started shipping"
