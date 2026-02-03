@@ -8,7 +8,7 @@ N="\e[0m"
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 MONGODB_HOST=mongo.cloudmine.co.in
-SCRIPT_DIR=$PWD
+SCRIPT_DIR=/home/ec2-user/shell-roboshop
 
 
 USER_ID=$(id -u)
@@ -83,7 +83,7 @@ dnf install mongodb-mongosh -y &>>$LOG_FILE
 INDEX=$(mongosh --host $MONGODB_HOST --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
 
 if [ $INDEX -le 0 ]; then
-    mongosh --host $MONGODB_HOST </app/db/master-data.js &>>$LOG_FILE
+    mongosh --host $MONGODB_HOST </app/db/master-data.js
     VALIDATE $? "Loading products"
 else
     echo -e "Products already loaded ... $Y SKIPPING $N"
