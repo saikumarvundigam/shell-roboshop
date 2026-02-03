@@ -8,7 +8,7 @@ N="\e[0m"
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 CATALOGUE_HOST=catalogue.cloudmine.co.in
-SCRIPT_DIR=$PWD
+SCRIPT_DIR=/home/ec2-user/shell-roboshop
 
 
 USER_ID=$(id -u)
@@ -45,8 +45,11 @@ rm -rf /usr/share/nginx/html/*
 VALIDATE $? "Removing of old NginX HTML files is"
 
 curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>> $LOG_FILE
-unzip /tmp/frontend.zip -d /usr/share/nginx/html &>> $LOG_FILE
+cd /usr/share/nginx/html
+unzip /tmp/frontend.zip &>>$LOGS_FILE
 VALIDATE $? "Frontend files are downloaded and unzipping is"
+
+rm -rf /etc/nginx/nginx.conf
 
 cp $SCRIPT_DIR/nginx.conf /etc/nginx/nginx.conf
 VALIDATE $? "Nginx config update is"
