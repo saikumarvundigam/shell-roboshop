@@ -8,7 +8,7 @@ N="\e[0m"
 LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 MONGODB_HOST=mongo.cloudmine.co.in
-SCRIPT_DIR=$PWD
+SCRIPT_DIR=/home/ec2-user/shell-roboshop
 
 
 USER_ID=$(id -u)
@@ -62,12 +62,11 @@ VALIDATE $? "Downloading cart code"
 unzip /tmp/cart.zip -d /app &>>LOG_FILE
 VALIDATE $? "Uzip cart code"
 
-npm install /app &>>$LOG_FILE
+npm install  &>>$LOG_FILE
 VALIDATE $? "Installing dependencies"
 
-
 cp $SCRIPT_DIR/cart.service /etc/systemd/system/cart.service
-VALIDATE $? "Creation of cart Service is"
+VALIDATE $? "Creation of Service is"
 
 systemctl daemon-reload
 systemctl enable cart  &>>$LOG_FILE
