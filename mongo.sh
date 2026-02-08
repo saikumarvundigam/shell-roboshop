@@ -9,6 +9,7 @@ LOG_FOLDER="/var/log/roboshop"
 LOG_FILE="$LOG_FOLDER"/$0.log
 USER_ID=$(id -u)
 
+
 if [ $USER_ID -ne 0 ]; then
 echo "$R Please run the script using root user $N" | tee -a $LOG_FILE
 exit 1
